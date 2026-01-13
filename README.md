@@ -1,50 +1,78 @@
-# Welcome to your Expo app 👋
+Pulse 📡
+Pulse is a mobile-first newsletter and publishing platform built with React Native and Supabase. Inspired by Substack, it allows creators to publish content directly to their subscribers' mobile devices with a clean, native reading experience.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+🚀 Features
+Native Reading Experience: Optimized for mobile with smooth scrolling and high-readability fonts.
 
-## Get started
+Real-time Updates: Powered by Supabase Realtime to notify users of new posts instantly.
 
-1. Install dependencies
+Markdown Support: Write and render posts using clean Markdown syntax.
 
-   ```bash
-   npm install
-   ```
+Secure Authentication: Secure "Magic Link" or Social login via Supabase Auth.
 
-2. Start the app
+Image Hosting: Optimized image storage and delivery using Supabase Storage.
 
-   ```bash
-   npx expo start
-   ```
+🛠️ Tech Stack
+Mobile Frontend
+Framework: React Native (or Expo)
 
-In the output, you'll find options to open the app in a
+Navigation: React Navigation
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Styling: NativeWind (Tailwind for React Native) or StyleSheet
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Icons: Lucide React Native
 
-## Get a fresh project
+Backend (Supabase)
+Database: PostgreSQL (Hosted on Supabase)
 
-When you're ready, run:
+Authentication: Supabase Auth (Magic Links/OTP)
 
-```bash
-npm run reset-project
-```
+Storage: Supabase Storage (for newsletter images/banners)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Serverless Logic: Supabase Edge Functions (for triggering email sends)
 
-## Learn more
+Infrastructure
+Email Engine: Resend or Nodemailer (triggered via Edge Functions)
 
-To learn more about developing your project with Expo, look at the following resources:
+🏁 Getting Started
+Prerequisites
+Node.js and npm/yarn
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Expo Go app on your phone (if using Expo)
 
-## Join the community
+A Supabase account and project
 
-Join our community of developers creating universal apps.
+Installation
+Clone the repo:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Bash
+
+git clone https://github.com/yourusername/pulse.git
+cd pulse
+Install dependencies:
+
+Bash
+
+npm install
+Environment Variables: Create a .env file in the root directory:
+
+Code snippet
+
+EXPO_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
+EXPO_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+Start the app:
+
+Bash
+
+npx expo start
+📱 Database Schema
+Pulse uses a simple, effective schema:
+
+profiles: User information and creator status.
+
+posts: Content, titles, and publication dates.
+
+subscriptions: Mapping users to the creators they follow.
+
+📄 License
+This project is licensed under the MIT License.
