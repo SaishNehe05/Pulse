@@ -58,8 +58,8 @@ Environment Variables: Create a .env file in the root directory:
 
 Code snippet
 
-EXPO_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
-EXPO_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+EXPO_PUBLIC_SUPABASE_URL="[https://your-project-id.supabase.co](https://lkvjnjhiiakhuenbbeaw.supabase.co)"
+EXPO_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrdmpuamhpaWFraHVlbmJiZWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNTMwNzAsImV4cCI6MjA4MzYyOTA3MH0.1VLYy6L_1d5kUEeIB1dJ2f52ZjxRvloBSOO0ELbcaRY"
 Start the app:
 
 Bash
