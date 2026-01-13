@@ -47,7 +47,7 @@ Clone the repo:
 
 Bash
 
-git clone https://github.com/yourusername/pulse.git
+git clone https://github.com/SaishNehe05/pulse.git
 cd pulse
 Install dependencies:
 
