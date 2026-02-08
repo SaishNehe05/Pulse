@@ -1,23 +1,23 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
-  ScrollView, 
-  TouchableOpacity, 
+import { useFocusEffect, useRouter } from 'expo-router';
+import { ArrowLeft, MoreVertical, Search, User } from 'lucide-react-native';
+import React, { useCallback, useState } from 'react';
+import {
   ActivityIndicator,
+  Alert,
+  Image,
   RefreshControl,
-  Alert
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Search, MoreVertical, User, Bell } from 'lucide-react-native';
 import { supabase } from '../supabase';
-import { useRouter, useFocusEffect } from 'expo-router';
 
 export default function PulseLandingPage() {
   const router = useRouter();
-  
+
   // States
   const [activeTab, setActiveTab] = useState('Posts');
   const [posts, setPosts] = useState<any[]>([]);
@@ -87,7 +87,7 @@ export default function PulseLandingPage() {
   };
 
   // Filter content based on active tab
-  const filteredContent = activeTab === 'Posts' 
+  const filteredContent = activeTab === 'Posts'
     ? posts.filter(p => p.title !== p.content.substring(0, 50)) // Simplified logic for Articles vs Notes
     : posts;
 
@@ -114,20 +114,20 @@ export default function PulseLandingPage() {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchPulseData(); }} tintColor="#FF6719" />}
       >
         {/* PROFILE HEADER */}
         <View style={styles.headerSection}>
           <TouchableOpacity style={styles.mainIllustration} onPress={() => router.push('/edit-profile')}>
-             <User size={60} color="#FF6719" />
+            <User size={60} color="#FF6719" />
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.subscribeBtn} onPress={handleSubscribe}>
             <Text style={styles.subscribeText}>Subscribe</Text>
           </TouchableOpacity>
-          
+
           <Text style={styles.brandTitle}>{profile?.username || 'User'}</Text>
           <Text style={styles.brandSubtitle}>
             {profile?.bio || "Sharing my thoughts and stories on Pulse."}
@@ -137,9 +137,9 @@ export default function PulseLandingPage() {
         {/* TAB BAR */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll} contentContainerStyle={{ paddingHorizontal: 20 }}>
           {tabs.map((tab) => (
-            <TouchableOpacity 
-              key={tab} 
-              onPress={() => setActiveTab(tab)} 
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
               style={[styles.tabItem, activeTab === tab && styles.activeTabItem]}
             >
               <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
@@ -162,8 +162,8 @@ export default function PulseLandingPage() {
               <Text style={styles.emptyText}>No {activeTab.toLowerCase()} yet.</Text>
             ) : (
               posts.map((item) => (
-                <TouchableOpacity 
-                  key={item.id} 
+                <TouchableOpacity
+                  key={item.id}
                   style={styles.postCard}
                   onPress={() => router.push({ pathname: '/article-detail', params: { id: item.id } })}
                 >
@@ -207,30 +207,30 @@ const styles = StyleSheet.create({
   headerSection: { alignItems: 'center', paddingHorizontal: 40, marginTop: 20 },
   mainIllustration: { width: 100, height: 100, borderRadius: 50, marginBottom: 20, backgroundColor: '#FFF0E8', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#FF6719' },
   subscribeBtn: { backgroundColor: '#000', paddingHorizontal: 35, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#FF6719' },
-  subscribeText: { color: '#FF6719', fontWeight: '700', fontSize: 14 },
-  brandTitle: { fontSize: 26, fontWeight: '900', marginTop: 20, color: '#000' },
-  brandSubtitle: { fontSize: 15, color: '#666', textAlign: 'center', marginTop: 8, lineHeight: 22 },
+  subscribeText: { color: '#FF6719', fontSize: 14, fontFamily: 'ClashGrotesk-Bold' },
+  brandTitle: { fontSize: 26, marginTop: 20, color: '#000', fontFamily: 'ClashGrotesk-Bold' },
+  brandSubtitle: { fontSize: 15, color: '#666', textAlign: 'center', marginTop: 8, lineHeight: 22, fontFamily: 'ClashGrotesk' },
   tabScroll: { marginTop: 30, borderBottomWidth: 1, borderBottomColor: '#f0f0f0', paddingBottom: 10 },
   tabItem: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20, marginRight: 10, backgroundColor: '#f5f5f5' },
   activeTabItem: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#000' },
-  tabText: { fontSize: 14, fontWeight: '600', color: '#666' },
+  tabText: { fontSize: 14, color: '#666', fontFamily: 'ClashGrotesk-SemiBold' },
   activeTabText: { color: '#000' },
   postsContainer: { paddingHorizontal: 20, marginTop: 20 },
   postCard: { marginBottom: 30, borderBottomWidth: 1, borderBottomColor: '#f0f0f0', paddingBottom: 20 },
   postHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   authorRow: { flexDirection: 'row', alignItems: 'center' },
   miniAvatar: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FF6719', marginRight: 8 },
-  authorName: { fontSize: 11, fontWeight: '700', color: '#666', letterSpacing: 1 },
-  dateText: { fontSize: 11, color: '#999', fontWeight: '600' },
+  authorName: { fontSize: 11, color: '#666', letterSpacing: 1, fontFamily: 'ClashGrotesk-Bold' },
+  dateText: { fontSize: 11, color: '#999', fontFamily: 'ClashGrotesk' },
   postBody: { flexDirection: 'row', justifyContent: 'space-between' },
   postTextContent: { flex: 1, paddingRight: 15 },
-  postTitle: { fontSize: 18, fontWeight: '800', color: '#000', lineHeight: 22 },
-  postSubtitle: { fontSize: 14, color: '#666', marginTop: 6, lineHeight: 18 },
-  readStatus: { fontSize: 12, color: '#28a745', fontWeight: '700', marginTop: 10 },
+  postTitle: { fontSize: 18, color: '#000', lineHeight: 22, fontFamily: 'ClashGrotesk-Bold' },
+  postSubtitle: { fontSize: 14, color: '#666', marginTop: 6, lineHeight: 18, fontFamily: 'ClashGrotesk' },
+  readStatus: { fontSize: 12, color: '#28a745', marginTop: 10, fontFamily: 'ClashGrotesk-Bold' },
   postThumb: { width: 80, height: 80, borderRadius: 8 },
-  emptyText: { textAlign: 'center', color: '#999', fontSize: 15 },
+  emptyText: { textAlign: 'center', color: '#999', fontSize: 15, fontFamily: 'ClashGrotesk-Medium' },
   aboutBox: { padding: 10 },
-  aboutTitle: { fontSize: 20, fontWeight: '800', marginBottom: 10 },
-  aboutText: { fontSize: 16, lineHeight: 24, color: '#444' },
-  memberSince: { marginTop: 20, color: '#999', fontSize: 13 }
+  aboutTitle: { fontSize: 20, marginBottom: 10, fontFamily: 'ClashGrotesk-Bold' },
+  aboutText: { fontSize: 16, lineHeight: 24, color: '#444', fontFamily: 'ClashGrotesk' },
+  memberSince: { marginTop: 20, color: '#999', fontSize: 13, fontFamily: 'ClashGrotesk-Medium' }
 });

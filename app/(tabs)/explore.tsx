@@ -1,29 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  ScrollView, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image, 
-  ActivityIndicator,
-  RefreshControl
-} from 'react-native';
-import { Search, Heart } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Heart, Search } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BOTTOM_NAV_PADDING } from '../../constants/layout';
+import { Colors } from '../../constants/theme';
 import { supabase } from '../../supabase';
 import { useTheme } from '../theme'; // Adjusted path to app/theme.tsx
 
 export default function Explore() {
   const { isDarkMode } = useTheme(); // Hook into global theme
   const router = useRouter();
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  
+
   const categories = ['Explore', 'Culture', 'Technology', 'Business'];
 
   useEffect(() => {
@@ -53,8 +55,7 @@ export default function Explore() {
       }));
 
       setPosts(mergedData);
-    } catch (err) {
-      console.error("Search Error:", err.message);
+    } catch (err: any) {
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -62,18 +63,18 @@ export default function Explore() {
   };
 
   // Dynamic Theme Colors
-  const bgColor = isDarkMode ? '#121212' : '#fff';
-  const textColor = isDarkMode ? '#fff' : '#000';
-  const subTextColor = isDarkMode ? '#888' : '#666';
-  const borderColor = isDarkMode ? '#333' : '#eee';
-  const inputBg = isDarkMode ? '#1E1E1E' : '#f8f8f8';
-  const chipBg = isDarkMode ? '#222' : '#f2f2f2';
+  const themeContainer = { backgroundColor: 'transparent' };
+  const textColor = isDarkMode ? Colors.dark.text : Colors.light.text;
+  const subTextColor = isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted;
+  const borderColor = isDarkMode ? Colors.dark.divider : Colors.light.divider;
+  const inputBg = isDarkMode ? Colors.dark.surface : Colors.light.surface;
+  const chipBg = isDarkMode ? Colors.dark.surface : Colors.light.surface;
 
   const renderFeedContent = () => {
     if (posts.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, { color: isDarkMode ? '#555' : '#999' }]}>No results for "{searchQuery}"</Text>
+          <Text style={[styles.emptyText, { color: isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted }]}>No results for "{searchQuery}"</Text>
         </View>
       );
     }
@@ -83,26 +84,26 @@ export default function Explore() {
 
     return (
       <View>
-        <TouchableOpacity 
+        <TouchableOpacity
           activeOpacity={0.9}
-          style={[styles.heroCard, { backgroundColor: isDarkMode ? '#1E1E1E' : '#eee' }]}
+          style={[styles.heroCard, { backgroundColor: isDarkMode ? Colors.dark.surface : Colors.light.surface }]}
           onPress={() => router.push({ pathname: '/article-detail', params: { id: heroPost.id } })}
         >
           {heroPost.image_url ? (
             <Image source={{ uri: heroPost.image_url }} style={styles.heroImage} />
           ) : (
-            <View style={[styles.heroImage, { backgroundColor: '#FF6719' }]} />
+            <View style={[styles.heroImage, { backgroundColor: isDarkMode ? Colors.dark.primary : Colors.light.primary }]} />
           )}
           <View style={styles.heroOverlay}>
-             <Text style={styles.heroTitle}>{heroPost.title || "Untitled Story"}</Text>
-             <Text style={styles.heroUser}>By {heroPost.profiles?.username}</Text>
+            <Text style={styles.heroTitle}>{heroPost.title || "Untitled Story"}</Text>
+            <Text style={[styles.heroUser, { color: isDarkMode ? Colors.dark.primary : Colors.light.primary }]}>By {heroPost.profiles?.username}</Text>
           </View>
         </TouchableOpacity>
 
         <Text style={[styles.sectionTitle, { color: textColor }]}>Discover More</Text>
         {remainingPosts.map((item) => (
-          <TouchableOpacity 
-            key={item.id} 
+          <TouchableOpacity
+            key={item.id}
             style={[styles.listItem, { borderBottomColor: borderColor }]}
             onPress={() => router.push({ pathname: '/article-detail', params: { id: item.id } })}
           >
@@ -111,12 +112,12 @@ export default function Explore() {
                 {item.title || "New Story"}
               </Text>
               <Text style={[styles.grayText, { color: subTextColor }]} numberOfLines={2}>{item.content}</Text>
-              
+
               <View style={styles.itemActions}>
-                <Text style={styles.authorTag}>@{item.profiles?.username}</Text>
+                <Text style={[styles.authorTag, { color: isDarkMode ? Colors.dark.primary : Colors.light.primary }]}>@{item.profiles?.username}</Text>
                 <View style={[styles.dot, { backgroundColor: isDarkMode ? '#333' : '#ccc' }]} />
                 <Heart size={12} color={isDarkMode ? "#555" : "#999"} />
-                <Text style={[styles.actionCount, { color: isDarkMode ? '#555' : '#999' }]}> 24</Text>
+                <Text style={[styles.actionCount, { color: isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted }]}> 24</Text>
               </View>
             </View>
             {item.image_url && (
@@ -129,14 +130,14 @@ export default function Explore() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: bgColor }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
       <View style={styles.searchHeader}>
         <View style={[styles.searchBar, { backgroundColor: inputBg, borderColor: borderColor }]}>
-          <Search size={18} color="#FF6719" />
-          <TextInput 
-            placeholder="Search stories..." 
-            placeholderTextColor={isDarkMode ? "#555" : "#999"}
-            style={[styles.searchInput, { color: textColor }]} 
+          <Search size={18} color={isDarkMode ? Colors.dark.primary : Colors.light.primary} />
+          <TextInput
+            placeholder="Search stories..."
+            placeholderTextColor={isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted}
+            style={[styles.searchInput, { color: textColor }]}
             value={searchQuery === 'Explore' ? '' : searchQuery}
             onChangeText={setSearchQuery}
             clearButtonMode="while-editing"
@@ -144,25 +145,27 @@ export default function Explore() {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {setRefreshing(true); fetchPosts();}} tintColor="#FF6719" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchPosts(); }} tintColor={isDarkMode ? Colors.dark.primary : Colors.light.primary} />}
+        contentContainerStyle={{ paddingBottom: BOTTOM_NAV_PADDING }}
       >
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips} contentContainerStyle={{ paddingRight: 30 }}>
           {categories.map((t, i) => (
-            <TouchableOpacity 
-                key={i} 
-                style={[
-                  styles.chip, 
-                  { backgroundColor: chipBg },
-                  (searchQuery === t || (t === 'Explore' && searchQuery === '')) && styles.activeChip
-                ]}
-                onPress={() => setSearchQuery(t === 'Explore' ? '' : t)}
+            <TouchableOpacity
+              key={i}
+              style={[
+                styles.chip,
+                { backgroundColor: chipBg },
+                (searchQuery === t || (t === 'Explore' && searchQuery === '')) && styles.activeChip,
+                (searchQuery === t || (t === 'Explore' && searchQuery === '')) && { backgroundColor: isDarkMode ? Colors.dark.primary : Colors.light.primary }
+              ]}
+              onPress={() => setSearchQuery(t === 'Explore' ? '' : t)}
             >
               <Text style={
-                (searchQuery === t || (t === 'Explore' && searchQuery === '')) 
-                ? styles.whiteText 
-                : [styles.blackText, { color: isDarkMode ? '#888' : '#666' }]
+                (searchQuery === t || (t === 'Explore' && searchQuery === ''))
+                  ? [styles.blackText, { color: Colors.light.text }] // Black text on lime/blue
+                  : [styles.blackText, { color: isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted }]
               }>
                 {t}
               </Text>
@@ -172,13 +175,13 @@ export default function Explore() {
 
         {loading && !refreshing ? (
           <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#FF6719" />
+            <ActivityIndicator size="large" color={Colors.light.primary} />
           </View>
         ) : (
           renderFeedContent()
         )}
-        
-        <View style={{ height: 60 }} /> 
+
+        <View style={{ height: 20 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -187,27 +190,27 @@ export default function Explore() {
 const styles = StyleSheet.create({
   searchHeader: { flexDirection: 'row', paddingHorizontal: 15, paddingVertical: 10, alignItems: 'center' },
   searchBar: { flex: 1, flexDirection: 'row', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 12, alignItems: 'center', borderWidth: 1 },
-  searchInput: { flex: 1, marginLeft: 10, fontSize: 16, height: 40 },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 16, height: 40, fontFamily: 'ClashGrotesk' },
   chips: { paddingHorizontal: 15, marginVertical: 10 },
   chip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginRight: 10 },
-  activeChip: { backgroundColor: '#FF6719' },
-  whiteText: { color: '#fff', fontWeight: 'bold' },
-  blackText: { fontWeight: 'bold' },
+  activeChip: { backgroundColor: Colors.light.primary },
+  // whiteText: { color: '#fff', fontWeight: 'bold' }, // Removed white text style
+  blackText: { fontFamily: 'ClashGrotesk-Bold' },
   heroCard: { margin: 15, height: 260, borderRadius: 20, overflow: 'hidden', justifyContent: 'flex-end' },
   heroImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
   heroOverlay: { backgroundColor: 'rgba(0,0,0,0.5)', padding: 20 },
-  heroTitle: { color: '#fff', fontSize: 26, fontWeight: '900', lineHeight: 30 },
-  heroUser: { color: '#FF6719', fontSize: 14, fontWeight: 'bold', marginTop: 8 },
+  heroTitle: { color: '#fff', fontSize: 26, lineHeight: 30, fontFamily: 'ClashGrotesk-Bold' },
+  heroUser: { color: Colors.light.primary, fontSize: 14, marginTop: 8, fontFamily: 'ClashGrotesk-Bold' },
   listItem: { flexDirection: 'row', padding: 15, borderBottomWidth: 1, alignItems: 'center' },
   smallThumb: { width: 80, height: 80, borderRadius: 12, marginLeft: 15 },
-  sectionTitle: { fontSize: 22, fontWeight: '900', marginHorizontal: 15, marginTop: 15, marginBottom: 5 },
-  boldText: { fontWeight: '800', fontSize: 17, marginBottom: 4 },
-  grayText: { fontSize: 14, lineHeight: 18 },
+  sectionTitle: { fontSize: 22, marginHorizontal: 15, marginTop: 15, marginBottom: 5, fontFamily: 'ClashGrotesk-Bold' },
+  boldText: { fontSize: 17, marginBottom: 4, fontFamily: 'ClashGrotesk-Bold' },
+  grayText: { fontSize: 14, lineHeight: 18, fontFamily: 'ClashGrotesk' },
   itemActions: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
-  authorTag: { fontSize: 12, color: '#FF6719', fontWeight: '700' },
+  authorTag: { fontSize: 12, color: Colors.light.primary, fontFamily: 'ClashGrotesk-Bold' },
   dot: { width: 3, height: 3, borderRadius: 2, marginHorizontal: 8 },
-  actionCount: { fontSize: 12, fontWeight: '600' },
+  actionCount: { fontSize: 12, fontFamily: 'ClashGrotesk-Medium' },
   loaderContainer: { marginTop: 100, alignItems: 'center' },
   emptyContainer: { marginTop: 80, alignItems: 'center', padding: 40 },
-  emptyText: { textAlign: 'center', fontSize: 16, fontWeight: '600' }
+  emptyText: { textAlign: 'center', fontSize: 16, fontFamily: 'ClashGrotesk-SemiBold' }
 });

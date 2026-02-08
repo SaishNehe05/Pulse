@@ -1,13 +1,24 @@
+import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeft, Bookmark, Heart, MoreHorizontal, Send, Share2 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { 
-  View, Text, StyleSheet, Image, ScrollView, 
-  TouchableOpacity, ActivityIndicator, TextInput, Keyboard, Alert, 
-  KeyboardAvoidingView, Platform, Dimensions 
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView, Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Colors } from '../constants/theme';
 import { supabase } from '../supabase';
-import { ArrowLeft, Share2, Heart, Send, Bookmark, MoreHorizontal } from 'lucide-react-native';
 import { useTheme } from './theme'; // Import your theme hook
 
 const { width } = Dimensions.get('window');
@@ -16,7 +27,7 @@ export default function ArticleDetail() {
   const { isDarkMode } = useTheme();
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  
+
   const [post, setPost] = useState<any>(null);
   const [author, setAuthor] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
@@ -27,9 +38,9 @@ export default function ArticleDetail() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => { 
+  useEffect(() => {
     if (id) {
-      fetchData(); 
+      fetchData();
     } else {
       setLoading(false);
     }
@@ -45,7 +56,7 @@ export default function ArticleDetail() {
         .select('*')
         .eq('id', id)
         .single();
-      
+
       if (postErr || !postData) throw new Error("Post not found");
 
       const { data: profileData } = await supabase
@@ -90,23 +101,28 @@ export default function ArticleDetail() {
         finalUrl = data.publicUrl;
       }
 
+      let finalAvatarUrl = null;
+      if (profileData?.avatar_url) {
+        const { data } = supabase.storage.from('avatars').getPublicUrl(profileData.avatar_url);
+        finalAvatarUrl = data.publicUrl;
+      }
+
       setPost({ ...postData, finalUrl });
-      setAuthor(profileData);
+      setAuthor({ ...profileData, finalAvatarUrl });
       setComments(commentsData || []);
       setLikesCount(likes || 0);
 
-    } catch (err) { 
-      console.error(err);
+    } catch (err) {
       Alert.alert("Error", "Could not load article.");
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoToProfile = () => {
     if (author?.id) {
       router.push({
-        pathname: "/profile", 
+        pathname: "/profile",
         params: { userId: author.id }
       });
     }
@@ -115,7 +131,7 @@ export default function ArticleDetail() {
   const handleToggleLike = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return Alert.alert("Join Pulse", "Sign in to like.");
-    
+
     const originalIsLiked = isLiked;
     setIsLiked(!isLiked);
     setLikesCount(prev => originalIsLiked ? prev - 1 : prev + 1);
@@ -130,7 +146,7 @@ export default function ArticleDetail() {
   const toggleFollow = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return Alert.alert("Join Pulse", "Sign in to follow creators.");
-    if (user.id === author?.id) return; 
+    if (user.id === author?.id) return;
 
     const original = isFollowing;
     setIsFollowing(!isFollowing);
@@ -148,42 +164,42 @@ export default function ArticleDetail() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return Alert.alert("Error", "Sign in to comment.");
-      
-      await supabase.from('comments').insert([{ 
-        post_id: id, 
-        user_id: user.id, 
-        content: newComment.trim() 
+
+      await supabase.from('comments').insert([{
+        post_id: id,
+        user_id: user.id,
+        content: newComment.trim()
       }]);
-      
+
       setNewComment('');
       Keyboard.dismiss();
-      fetchData(); 
-    } catch (err) { 
-      Alert.alert("Error", "Could not post comment."); 
-    } finally { 
-      setSubmitting(false); 
+      fetchData();
+    } catch (err) {
+      Alert.alert("Error", "Could not post comment.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   // Theme Constants
-  const bgColor = isDarkMode ? '#121212' : '#FFF';
-  const textColor = isDarkMode ? '#FFF' : '#000';
-  const subTextColor = isDarkMode ? '#888' : '#666';
-  const borderColor = isDarkMode ? '#222' : '#F0F0F0';
-  const cardBg = isDarkMode ? '#1E1E1E' : '#FFF';
-  const interactionPillBg = isDarkMode ? '#1E1E1E' : '#FFF';
-  const iconColor = isDarkMode ? '#FFF' : '#000';
+  const bgColor = 'transparent';
+  const textColor = isDarkMode ? Colors.dark.text : Colors.light.text;
+  const subTextColor = isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted;
+  const borderColor = isDarkMode ? Colors.dark.divider : Colors.light.divider;
+  const cardBg = isDarkMode ? Colors.dark.surface : Colors.light.surface;
+  const interactionPillBg = isDarkMode ? Colors.dark.surface : Colors.light.surface;
+  const iconColor = isDarkMode ? Colors.dark.text : Colors.light.text;
 
   if (loading) return (
     <View style={[styles.centered, { backgroundColor: bgColor }]}>
-      <ActivityIndicator size="large" color="#FF6719" />
+      <ActivityIndicator size="large" color={Colors.light.primary} />
     </View>
   );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        
+
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
             <ArrowLeft size={22} color={iconColor} />
@@ -196,20 +212,28 @@ export default function ArticleDetail() {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity 
-            style={[styles.pulseBadge, { backgroundColor: isDarkMode ? '#2A1A10' : '#FFF0E8', borderColor: '#FF6719' }]} 
-            onPress={handleGoToProfile}
-          >
-            <Text style={styles.pulseBadgeText}>{author?.username?.toUpperCase() || 'USER'}'S PULSE</Text>
+          <TouchableOpacity onPress={handleGoToProfile} activeOpacity={0.8}>
+            <LinearGradient
+              colors={isDarkMode ? ['#8F9AFF', '#FFB1EE'] : ['#5E9BFF', '#FF8E59']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.pulseBadge}
+            >
+              <Text style={styles.pulseBadgeText}>{author?.username?.toUpperCase() || 'USER'}'S PULSE</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <Text style={[styles.titleText, { color: textColor }]}>{post?.title}</Text>
-          
+
           <View style={styles.authorRow}>
             <TouchableOpacity onPress={handleGoToProfile} style={styles.avatar}>
-               <Text style={styles.avatarText}>{author?.username?.[0]?.toUpperCase() || '?'}</Text>
+              {author?.finalAvatarUrl ? (
+                <Image source={{ uri: author.finalAvatarUrl }} style={styles.fullImg} />
+              ) : (
+                <Text style={styles.avatarText}>{author?.username?.[0]?.toUpperCase() || '?'}</Text>
+              )}
             </TouchableOpacity>
-            
+
             <TouchableOpacity onPress={handleGoToProfile} style={{ flex: 1 }}>
               <Text style={[styles.authorName, { color: textColor }]}>{author?.username || 'Anonymous'}</Text>
               <Text style={[styles.dateText, { color: subTextColor }]}>
@@ -217,8 +241,8 @@ export default function ArticleDetail() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              onPress={toggleFollow} 
+            <TouchableOpacity
+              onPress={toggleFollow}
               style={[styles.followButton, isFollowing && { backgroundColor: isDarkMode ? '#333' : '#F0F0F0' }]}
             >
               <Text style={[styles.followButtonText, isFollowing && { color: subTextColor }]}>
@@ -246,9 +270,9 @@ export default function ArticleDetail() {
         </ScrollView>
 
         <View style={[
-          styles.interactionPill, 
-          { 
-            backgroundColor: interactionPillBg, 
+          styles.interactionPill,
+          {
+            backgroundColor: interactionPillBg,
             borderColor: borderColor,
             shadowColor: isDarkMode ? '#000' : '#000',
           }
@@ -258,15 +282,15 @@ export default function ArticleDetail() {
             <Text style={[styles.likeText, { color: isLiked ? '#FF3B30' : textColor }]}>{likesCount}</Text>
           </TouchableOpacity>
           <View style={[styles.verticalDivider, { backgroundColor: borderColor }]} />
-          <TextInput 
-            style={[styles.commentInput, { color: textColor }]} 
-            placeholder="Write a reply..." 
+          <TextInput
+            style={[styles.commentInput, { color: textColor }]}
+            placeholder="Write a reply..."
             placeholderTextColor={isDarkMode ? "#555" : "#999"}
             value={newComment}
             onChangeText={setNewComment}
           />
           <TouchableOpacity onPress={handlePostComment} style={styles.sendCircle} disabled={submitting}>
-            {submitting ? <ActivityIndicator size="small" color="#FFF" /> : <Send size={18} color="#FFF" />}
+            {submitting ? <ActivityIndicator size="small" color="#1C1917" /> : <Send size={18} color="#1C1917" />}
           </TouchableOpacity>
         </View>
 
@@ -282,29 +306,30 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row' },
   headerBtn: { padding: 10 },
   scrollContent: { paddingHorizontal: 20, paddingTop: 10 },
-  pulseBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, marginBottom: 15, borderWidth: 1 },
-  pulseBadgeText: { color: '#FF6719', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  titleText: { fontSize: 32, fontWeight: '900', lineHeight: 38, marginBottom: 20 },
+  pulseBadge: { alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginBottom: 15 },
+  pulseBadgeText: { color: '#FFFFFF', fontSize: 12, letterSpacing: 1.2, fontFamily: 'ClashGrotesk-Bold' },
+  titleText: { fontSize: 32, lineHeight: 38, marginBottom: 20, fontFamily: 'ClashGrotesk-Bold' },
   authorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 25 },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FF6719', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  avatarText: { color: '#FFF', fontWeight: 'bold', fontSize: 18 },
-  authorName: { fontSize: 16, fontWeight: '700' },
-  dateText: { fontSize: 13, marginTop: 2 },
-  followButton: { backgroundColor: '#FF6719', paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20 },
-  followButtonText: { color: '#FFF', fontWeight: '800', fontSize: 14 },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.light.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
+  fullImg: { width: '100%', height: '100%' },
+  avatarText: { color: '#1E2230', fontSize: 18, fontFamily: 'ClashGrotesk-Bold' },
+  authorName: { fontSize: 16, fontFamily: 'ClashGrotesk-Bold' },
+  dateText: { fontSize: 13, marginTop: 2, fontFamily: 'ClashGrotesk' },
+  followButton: { backgroundColor: Colors.light.primary, paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20 },
+  followButtonText: { color: '#1E2230', fontSize: 14, fontFamily: 'ClashGrotesk-Bold' },
   heroImage: { width: '100%', height: 280, borderRadius: 16, marginBottom: 25 },
-  articleBody: { fontSize: 18, lineHeight: 30 },
+  articleBody: { fontSize: 18, lineHeight: 30, fontFamily: 'ClashGrotesk' },
   sectionDivider: { height: 1, marginVertical: 40 },
-  commentHeader: { fontSize: 22, fontWeight: '900', marginBottom: 20 },
+  commentHeader: { fontSize: 22, marginBottom: 20, fontFamily: 'ClashGrotesk-Bold' },
   commentCard: { marginBottom: 20, paddingBottom: 20, borderBottomWidth: 1 },
   commentTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-  commentUser: { fontWeight: '700', color: '#FF6719' },
-  commentTime: { fontSize: 12 },
-  commentBody: { fontSize: 15, lineHeight: 22 },
+  commentUser: { color: Colors.light.primary, fontFamily: 'ClashGrotesk-Bold' },
+  commentTime: { fontSize: 12, fontFamily: 'ClashGrotesk' },
+  commentBody: { fontSize: 15, lineHeight: 22, fontFamily: 'ClashGrotesk' },
   interactionPill: { position: 'absolute', bottom: 30, left: 15, right: 15, height: 60, borderRadius: 30, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, shadowOpacity: 0.1, shadowRadius: 10, elevation: 10, borderWidth: 1 },
   likeAction: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 },
-  likeText: { marginLeft: 8, fontWeight: '800', fontSize: 16 },
+  likeText: { marginLeft: 8, fontSize: 16, fontFamily: 'ClashGrotesk-Bold' },
   verticalDivider: { width: 1, height: 25 },
-  commentInput: { flex: 1, paddingHorizontal: 15, fontSize: 15 },
-  sendCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FF6719', justifyContent: 'center', alignItems: 'center' }
+  commentInput: { flex: 1, paddingHorizontal: 15, fontSize: 15, fontFamily: 'ClashGrotesk' },
+  sendCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.light.primary, justifyContent: 'center', alignItems: 'center' }
 });

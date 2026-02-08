@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, Text, TextInput, FlatList, StyleSheet, 
-  TouchableOpacity, ActivityIndicator, Keyboard 
-} from 'react-native';
 import { useRouter } from 'expo-router';
+import { ChevronLeft, Search, X } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Keyboard,
+  StyleSheet,
+  Text, TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { Colors } from '../constants/theme';
 import { supabase } from '../supabase';
-import { Search, User, ChevronLeft, X } from 'lucide-react-native';
-import { useTheme } from './theme'; 
+import { useTheme } from './theme';
 
 export default function NewMessageSearch() {
   const { isDarkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -47,12 +53,12 @@ export default function NewMessageSearch() {
 
   // Theme Palette
   const theme = {
-    bg: isDarkMode ? '#121212' : '#FFFFFF',
-    text: isDarkMode ? '#FFFFFF' : '#1A1A1A',
-    subtext: isDarkMode ? '#A0A0A0' : '#666666',
-    inputBg: isDarkMode ? '#1E1E1E' : '#F5F5F7',
-    border: isDarkMode ? '#2C2C2E' : '#E5E5EA',
-    accent: '#FF6719'
+    bg: 'transparent',
+    text: isDarkMode ? Colors.dark.text : Colors.light.text,
+    subtext: isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted,
+    inputBg: isDarkMode ? Colors.dark.surface : Colors.light.surface,
+    border: isDarkMode ? Colors.dark.divider : Colors.light.divider,
+    accent: Colors.light.primary
   };
 
   return (
@@ -106,7 +112,7 @@ export default function NewMessageSearch() {
           ) : null
         }
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={0.7}
             style={[styles.userItem, { borderBottomColor: theme.border }]}
             onPress={() => {
@@ -136,79 +142,79 @@ export default function NewMessageSearch() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { 
-    paddingTop: 60, 
-    paddingBottom: 20, 
-    paddingHorizontal: 20, 
-    borderBottomWidth: 1 
+  header: {
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1
   },
-  headerTop: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 20 
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20
   },
-  headerTitle: { 
-    fontSize: 20, 
-    fontWeight: '800', 
-    marginLeft: 10 
+  headerTitle: {
+    fontSize: 20,
+    marginLeft: 10,
+    fontFamily: 'ClashGrotesk-Bold'
   },
   backBtn: { marginLeft: -10 },
-  searchContainer: { 
-    flexDirection: 'row', 
-    paddingHorizontal: 15, 
-    borderRadius: 14, 
-    alignItems: 'center', 
-    height: 50 
+  searchContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 15,
+    borderRadius: 14,
+    alignItems: 'center',
+    height: 50
   },
   searchIcon: { marginRight: 10 },
-  input: { 
-    flex: 1, 
-    fontSize: 16, 
-    fontWeight: '500' 
+  input: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'ClashGrotesk-Medium'
   },
-  listPadding: { 
-    paddingBottom: 40 
+  listPadding: {
+    paddingBottom: 40
   },
-  userItem: { 
-    flexDirection: 'row', 
-    paddingVertical: 15, 
-    paddingHorizontal: 20, 
-    alignItems: 'center', 
-    borderBottomWidth: 0.5 
+  userItem: {
+    flexDirection: 'row',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    borderBottomWidth: 0.5
   },
-  avatar: { 
-    width: 52, 
-    height: 52, 
-    borderRadius: 26, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 15,
-    shadowColor: '#FF6719',
+    shadowColor: Colors.light.primary,
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 3
   },
   avatarInitial: {
-    color: '#FFF',
+    color: '#1E2230',
     fontSize: 20,
-    fontWeight: '800'
+    fontFamily: 'ClashGrotesk-Bold'
   },
   userInfo: { flex: 1 },
-  username: { 
-    fontSize: 17, 
-    fontWeight: '700',
-    marginBottom: 2
+  username: {
+    fontSize: 17,
+    marginBottom: 2,
+    fontFamily: 'ClashGrotesk-Bold'
   },
-  subtext: { fontSize: 13 },
-  emptyContainer: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginTop: 100, 
-    paddingHorizontal: 40 
+  subtext: { fontSize: 13, fontFamily: 'ClashGrotesk' },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 100,
+    paddingHorizontal: 40
   },
-  emptyText: { 
-    fontSize: 15, 
-    textAlign: 'center', 
-    fontWeight: '500' 
+  emptyText: {
+    fontSize: 15,
+    textAlign: 'center',
+    fontFamily: 'ClashGrotesk-Medium'
   }
 });

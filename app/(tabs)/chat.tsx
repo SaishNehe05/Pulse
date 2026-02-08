@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MessageSquarePlus, Search as SearchIcon, User } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { MessageSquarePlus, Search as SearchIcon, User } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BOTTOM_NAV_PADDING } from '../../constants/layout';
+import { Colors } from '../../constants/theme';
 import { supabase } from '../../supabase';
 import { useTheme } from '../theme'; // Adjusted path to app/theme.tsx
 
 export default function ChatListScreen() {
   const { isDarkMode } = useTheme(); // Hook into global theme
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -44,10 +46,10 @@ export default function ChatListScreen() {
 
       const chatMap = new Map();
       messages.forEach(msg => {
-        const { data: { user: currentUser } } = { data: { user } }; 
+        const { data: { user: currentUser } } = { data: { user } };
         const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-        const otherName = msg.sender_id === user.id ? msg.receiver?.username : msg.sender?.username;
-        
+        const otherName = msg.sender_id === user.id ? (msg.receiver as any)?.username : (msg.sender as any)?.username;
+
         if (!chatMap.has(otherId) && otherId) {
           chatMap.set(otherId, {
             id: otherId,
@@ -60,7 +62,7 @@ export default function ChatListScreen() {
       });
 
       setConversations(Array.from(chatMap.values()));
-    } catch (err) {
+    } catch (err: any) {
       console.error("Inbox Error:", err.message);
     } finally {
       setLoading(false);
@@ -68,12 +70,12 @@ export default function ChatListScreen() {
   };
 
   // Dynamic Theme Colors
-  const themeContainer = { backgroundColor: isDarkMode ? '#121212' : '#fff' };
-  const themeText = { color: isDarkMode ? '#fff' : '#1a1a1a' };
-  const themeSubText = { color: isDarkMode ? '#888' : '#666' };
-  const themeBorder = { borderBottomColor: isDarkMode ? '#333' : '#f0f0f0' };
-  const themeIconCircle = { backgroundColor: isDarkMode ? '#1E1E1E' : '#f5f5f5' };
-  const themeAvatarBg = { backgroundColor: isDarkMode ? '#333' : '#1a1a1a' };
+  const themeContainer = { backgroundColor: 'transparent' };
+  const themeText = { color: isDarkMode ? Colors.dark.text : Colors.light.text };
+  const themeSubText = { color: isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted };
+  const themeBorder = { borderBottomColor: isDarkMode ? Colors.dark.divider : Colors.light.divider };
+  const themeIconCircle = { backgroundColor: isDarkMode ? Colors.dark.surface : Colors.light.surface };
+  const themeAvatarBg = { backgroundColor: isDarkMode ? Colors.dark.surface : Colors.light.surface };
 
   return (
     <SafeAreaView style={[styles.container, themeContainer]} edges={['top']}>
@@ -85,19 +87,20 @@ export default function ChatListScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#FF6719" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color={isDarkMode ? Colors.dark.primary : Colors.light.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
           data={conversations}
+          contentContainerStyle={{ paddingBottom: BOTTOM_NAV_PADDING }}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={[styles.emptyText, { color: isDarkMode ? '#444' : '#ccc' }]}>No conversations yet.</Text>
-              <Text style={[styles.emptySub, { color: isDarkMode ? '#333' : '#ddd' }]}>Tap the orange button to start one!</Text>
+              <Text style={[styles.emptySub, { color: isDarkMode ? '#333' : '#ddd' }]}>Tap the blue button to start one!</Text>
             </View>
           }
           renderItem={({ item }) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.chatRow}
               onPress={() => router.push({
                 pathname: '/chat-window',
@@ -119,11 +122,11 @@ export default function ChatListScreen() {
         />
       )}
 
-      <TouchableOpacity 
-        style={styles.fab} 
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: isDarkMode ? Colors.dark.primary : Colors.light.primary }]}
         onPress={() => router.push('/new-message')}
       >
-        <MessageSquarePlus color="white" size={28} />
+        <MessageSquarePlus color={isDarkMode ? "#000" : "#1C1917"} size={28} />
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -132,17 +135,17 @@ export default function ChatListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, alignItems: 'center' },
-  headerTitle: { fontSize: 28, fontWeight: '800' },
+  headerTitle: { fontSize: 28, fontFamily: 'ClashGrotesk-Bold' },
   searchCircle: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
   chatRow: { flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 15, alignItems: 'center' },
   avatar: { width: 55, height: 55, borderRadius: 27.5, justifyContent: 'center', alignItems: 'center' },
   chatContent: { flex: 1, marginLeft: 15, borderBottomWidth: 0.5, paddingBottom: 15 },
   row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  userName: { fontSize: 17, fontWeight: '700' },
-  time: { fontSize: 12 },
-  snippet: { fontSize: 14 },
-  fab: { position: 'absolute', bottom: 30, right: 20, backgroundColor: '#FF6719', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+  userName: { fontSize: 17, fontFamily: 'ClashGrotesk-Bold' },
+  time: { fontSize: 12, fontFamily: 'ClashGrotesk' },
+  snippet: { fontSize: 14, fontFamily: 'ClashGrotesk' },
+  fab: { position: 'absolute', bottom: 85, right: 20, backgroundColor: Colors.light.primary, width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
   emptyContainer: { alignItems: 'center', marginTop: 100 },
-  emptyText: { fontSize: 18, fontWeight: '700' },
-  emptySub: { marginTop: 5 }
+  emptyText: { fontSize: 18, fontFamily: 'ClashGrotesk-Bold' },
+  emptySub: { marginTop: 5, fontFamily: 'ClashGrotesk' }
 });

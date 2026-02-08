@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ActivityIndicator, 
-  Alert, 
-  KeyboardAvoidingView, 
-  Platform 
-} from 'react-native';
-import { supabase } from '../supabase';
 import { useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
-import { useTheme } from './theme'; 
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { Colors } from '../constants/theme';
+import { supabase } from '../supabase';
+import { useTheme } from './theme';
 
 export default function CreatePost() {
   const { isDarkMode } = useTheme();
@@ -21,19 +22,15 @@ export default function CreatePost() {
   const [isPosting, setIsPosting] = useState(false);
   const router = useRouter();
 
-  // DEBUG: Check your terminal to see if this fires when you toggle theme
-  useEffect(() => {
-    console.log("CreatePost Screen Theme:", isDarkMode ? "DARK" : "LIGHT");
-  }, [isDarkMode]);
 
   // Theme Palette
   const theme = {
-    bg: isDarkMode ? '#121212' : '#FFFFFF',
-    text: isDarkMode ? '#FFFFFF' : '#000000',
-    border: isDarkMode ? '#222222' : '#EEEEEE',
-    placeholder: isDarkMode ? '#555555' : '#999999',
-    disabledBtn: isDarkMode ? '#4D2410' : '#FFB38C',
-    accent: '#FF6719'
+    bg: 'transparent',
+    text: isDarkMode ? Colors.dark.text : Colors.light.text,
+    border: isDarkMode ? Colors.dark.divider : Colors.light.divider,
+    placeholder: isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted,
+    disabledBtn: isDarkMode ? '#2A2E3B' : '#D6DAE2', // Use divider/muted colors for disabled state
+    accent: Colors.light.primary
   };
 
   const handlePost = async () => {
@@ -52,7 +49,7 @@ export default function CreatePost() {
       ]);
 
       if (error) throw error;
-      router.replace('/(tabs)/explore'); 
+      router.replace('/(tabs)/explore');
     } catch (err: any) {
       Alert.alert("Error", err.message);
     } finally {
@@ -62,8 +59,8 @@ export default function CreatePost() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         {/* HEADER */}
@@ -71,14 +68,14 @@ export default function CreatePost() {
           <TouchableOpacity onPress={() => router.back()} style={styles.iconPadding}>
             <X size={28} color={theme.text} />
           </TouchableOpacity>
-          
+
           <Text style={[styles.headerTitle, { color: theme.text }]}>New Post</Text>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
-              styles.postBtn, 
+              styles.postBtn,
               !content.trim() && { backgroundColor: theme.disabledBtn }
-            ]} 
+            ]}
             onPress={handlePost}
             disabled={isPosting || !content.trim()}
           >
@@ -111,28 +108,29 @@ export default function CreatePost() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    paddingHorizontal: 20, 
-    paddingTop: Platform.OS === 'ios' ? 60 : 40, 
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 15,
     borderBottomWidth: 1,
   },
   iconPadding: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700' },
-  postBtn: { 
-    backgroundColor: '#FF6719', 
-    paddingHorizontal: 20, 
-    paddingVertical: 8, 
-    borderRadius: 20 
+  headerTitle: { fontSize: 18, fontFamily: 'ClashGrotesk-Bold' },
+  postBtn: {
+    backgroundColor: Colors.light.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20
   },
-  postBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 },
+  postBtnText: { color: '#1E2230', fontSize: 14, fontFamily: 'ClashGrotesk-Bold' },
   inputSection: { flex: 1, padding: 20 },
-  input: { 
-    fontSize: 19, 
-    lineHeight: 26, 
-    flex: 1 
+  input: {
+    fontSize: 19,
+    lineHeight: 26,
+    flex: 1,
+    fontFamily: 'ClashGrotesk'
   }
 });
