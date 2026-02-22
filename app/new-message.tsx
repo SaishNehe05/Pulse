@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Search, X } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Keyboard,
   StyleSheet,
   Text, TextInput,
@@ -43,7 +44,16 @@ export default function NewMessageSearch() {
         .limit(15);
 
       if (error) throw error;
-      setResults(data || []);
+
+      const resultsWithAvatars = (data || []).map(u => {
+        if (u.avatar_url) {
+          const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(u.avatar_url);
+          return { ...u, avatar_full_url: urlData.publicUrl };
+        }
+        return u;
+      });
+
+      setResults(resultsWithAvatars);
     } catch (err: any) {
       console.error("Search error:", err.message);
     } finally {
@@ -58,7 +68,7 @@ export default function NewMessageSearch() {
     subtext: isDarkMode ? Colors.dark.textMuted : Colors.light.textMuted,
     inputBg: isDarkMode ? Colors.dark.surface : Colors.light.surface,
     border: isDarkMode ? Colors.dark.divider : Colors.light.divider,
-    accent: Colors.light.primary
+    accent: isDarkMode ? Colors.dark.secondary : Colors.light.secondary
   };
 
   return (
@@ -72,11 +82,17 @@ export default function NewMessageSearch() {
           <Text style={[styles.headerTitle, { color: theme.text }]}>New Message</Text>
         </View>
 
-        <View style={[styles.searchContainer, { backgroundColor: theme.inputBg }]}>
-          <Search size={18} color={theme.subtext} style={styles.searchIcon} />
+        <View style={[
+          styles.searchContainer,
+          {
+            backgroundColor: theme.inputBg,
+            borderColor: theme.border
+          }
+        ]}>
+          <Search size={18} color={theme.accent} style={styles.searchIcon} />
           <TextInput
             placeholder="Search by username..."
-            placeholderTextColor={isDarkMode ? "#555" : "#A0A0A0"}
+            placeholderTextColor={theme.subtext}
             style={[styles.input, { color: theme.text }]}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -84,8 +100,8 @@ export default function NewMessageSearch() {
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <X size={18} color={theme.subtext} />
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearBtn}>
+              <X size={16} color={theme.subtext} />
             </TouchableOpacity>
           )}
           {loading && <ActivityIndicator size="small" color={theme.accent} style={{ marginLeft: 10 }} />}
@@ -113,26 +129,39 @@ export default function NewMessageSearch() {
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            activeOpacity={0.7}
-            style={[styles.userItem, { borderBottomColor: theme.border }]}
+            activeOpacity={0.8}
+            style={[
+              styles.userCard,
+              {
+                backgroundColor: theme.inputBg,
+                borderColor: theme.border
+              }
+            ]}
             onPress={() => {
               Keyboard.dismiss();
               router.push({
                 pathname: '/chat-window',
-                params: { recipientId: item.id, recipientName: item.username || 'Pulse User' }
+                params: { recipientId: item.id, recipientName: item.username || 'User' }
               });
             }}
           >
-            <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
-              <Text style={styles.avatarInitial}>
-                {item.username ? item.username[0].toUpperCase() : 'P'}
-              </Text>
+            <View style={[styles.avatar, { borderColor: theme.border }]}>
+              {item.avatar_full_url ? (
+                <Image source={{ uri: item.avatar_full_url }} style={styles.fullImg} />
+              ) : (
+                <View style={[styles.avatarFallback, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+                  <Text style={[styles.avatarInitial, { color: theme.accent }]}>
+                    {item.username ? item.username[0].toUpperCase() : 'P'}
+                  </Text>
+                </View>
+              )}
             </View>
             <View style={styles.userInfo}>
-              <Text style={[styles.username, { color: theme.text }]}>{item.username || "Pulse User"}</Text>
-              <Text style={[styles.subtext, { color: theme.subtext }]}>Active on Pulse</Text>
+              <Text style={[styles.username, { color: theme.text }]}>{item.username || "User"}</Text>
             </View>
-            <ChevronLeft size={20} color={theme.border} style={{ transform: [{ rotate: '180deg' }] }} />
+            <View style={[styles.actionIcon, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+              <ChevronRight size={16} color={theme.accent} />
+            </View>
           </TouchableOpacity>
         )}
       />
@@ -162,59 +191,81 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     paddingHorizontal: 15,
-    borderRadius: 14,
+    borderRadius: 18,
     alignItems: 'center',
-    height: 50
+    height: 54,
+    borderWidth: 1,
   },
-  searchIcon: { marginRight: 10 },
+  searchIcon: { marginRight: 12 },
   input: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'ClashGrotesk-Medium'
+    fontFamily: 'ClashGrotesk-Medium',
+    letterSpacing: -0.2
+  },
+  clearBtn: {
+    padding: 4,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 10,
+    marginLeft: 8
   },
   listPadding: {
+    paddingHorizontal: 20,
+    paddingTop: 15,
     paddingBottom: 40
   },
-  userItem: {
+  userCard: {
     flexDirection: 'row',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    padding: 12,
+    borderRadius: 20,
     alignItems: 'center',
-    borderBottomWidth: 0.5
+    marginBottom: 12,
+    borderWidth: 1,
   },
   avatar: {
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
-    shadowColor: Colors.light.primary,
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3
+    overflow: 'hidden',
+    borderWidth: 1,
+  },
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   avatarInitial: {
-    color: '#1E2230',
     fontSize: 20,
     fontFamily: 'ClashGrotesk-Bold'
   },
   userInfo: { flex: 1 },
   username: {
-    fontSize: 17,
-    marginBottom: 2,
-    fontFamily: 'ClashGrotesk-Bold'
+    fontSize: 16,
+    fontFamily: 'ClashGrotesk-Bold',
+    letterSpacing: -0.3
   },
-  subtext: { fontSize: 13, fontFamily: 'ClashGrotesk' },
+  actionIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  fullImg: { width: '100%', height: '100%' },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 100,
+    marginTop: 80,
     paddingHorizontal: 40
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 16,
     textAlign: 'center',
-    fontFamily: 'ClashGrotesk-Medium'
+    fontFamily: 'ClashGrotesk-Medium',
+    opacity: 0.6
   }
 });

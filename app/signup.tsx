@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PulseLogo from '../components/PulseLogo';
 import { Colors } from '../constants/theme';
@@ -90,7 +90,7 @@ export default function SignupScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         style={{ flex: 1 }}
       >
         <ScrollView
@@ -135,7 +135,7 @@ export default function SignupScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color={theme.btnText} />
+              <ActivityIndicator color={isDarkMode ? Colors.dark.secondary : Colors.light.secondary} />
             ) : (
               <Text style={[styles.btnText, { color: theme.btnText, fontFamily: 'ClashGrotesk-Bold' }]}>
                 Create Account

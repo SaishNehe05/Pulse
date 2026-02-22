@@ -7,7 +7,6 @@ import {
   Alert,
   Image,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,7 +29,7 @@ export default function WriteSubstack() {
   const router = useRouter();
 
   const themeColors = {
-    bg: isDarkMode ? Colors.dark.background : '#fff',
+    bg: 'transparent',
     text: isDarkMode ? Colors.dark.text : '#000',
     secondaryText: isDarkMode ? Colors.dark.textMuted : '#999',
     primary: isDarkMode ? Colors.dark.primary : Colors.light.primary,
@@ -129,13 +128,13 @@ export default function WriteSubstack() {
           onPress={publishNote}
           disabled={loading || (!content.trim() && !image)}
         >
-          {loading ? <ActivityIndicator size="small" color={themeColors.primary} /> :
+          {loading ? <ActivityIndicator size="small" color={isDarkMode ? Colors.dark.secondary : Colors.light.secondary} /> :
             <Text style={[styles.publishText, { color: themeColors.primary }, (!content.trim() && !image) && { opacity: 0.3 }]}>Publish</Text>}
         </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="padding"
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -220,7 +219,7 @@ function AttachmentItem({ icon, label, onPress, isActive, themeColors }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: 'transparent' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

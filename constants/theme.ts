@@ -36,7 +36,7 @@ export const Colors = {
     background: '#11131A',
     surface: '#161925',
     primary: '#8F9AFF',
-    secondary: '#FFB1EE',
+    secondary: '#FF8E59',
     divider: '#2A2E3B',
     tint: tintColorDark,
     tabIconDefault: '#9AA0B2',

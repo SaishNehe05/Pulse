@@ -1,17 +1,21 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Bookmark, Heart, MessageSquare, MoreHorizontal, Plus, Repeat2, Share2 } from 'lucide-react-native';
+import { Eye, Heart, MessageSquare, MoreHorizontal, Plus, Share2 } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, Image, RefreshControl, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import PostMenu from '../../components/PostMenu';
+import PulseBar from '../../components/PulseBar';
 import { BOTTOM_NAV_PADDING } from '../../constants/layout';
 import { Colors } from '../../constants/theme';
 import { supabase } from '../../supabase';
+import { timeAgo } from '../../utils/dateUtils';
 import { useTheme } from '../theme';
 
 export default function HomeFeed() {
   const { isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
+
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -91,8 +95,33 @@ export default function HomeFeed() {
     try {
       if (isCurrentlyLiked) {
         await supabase.from('likes').delete().match({ post_id: post.id, user_id: userId });
+        // Remove notification
+        await supabase.from('notifications').delete().match({
+          user_id: post.user_id,
+          actor_id: userId,
+          type: 'like',
+          post_id: post.id
+        });
       } else {
-        await supabase.from('likes').insert({ post_id: post.id, user_id: userId });
+        const { error } = await supabase.from('likes').insert({ post_id: post.id, user_id: userId });
+        if (!error && post.user_id && post.user_id !== userId) {
+          // 1. Force delete any existing/stale notification first
+          await supabase.from('notifications').delete().match({
+            user_id: post.user_id,
+            actor_id: userId,
+            type: 'like',
+            post_id: post.id
+          });
+
+          // 2. Insert fresh notification
+          await supabase.from('notifications').insert({
+            user_id: post.user_id,
+            actor_id: userId,
+            type: 'like',
+            post_id: post.id,
+            is_read: false
+          });
+        }
       }
     } catch (err) {
       // Database sync error handled silently
@@ -190,11 +219,10 @@ export default function HomeFeed() {
           </TouchableOpacity>
           <View>
             <Text style={[styles.authorText, themeText]}>{item.displayName}</Text>
-            <Text style={styles.timeText}>5d</Text>
+            <Text style={styles.timeText}>{timeAgo(item.created_at)}</Text>
           </View>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity><Text style={styles.subscribeText}>Subscribe</Text></TouchableOpacity>
           <TouchableOpacity style={styles.moreBtn} onPress={(e) => handleMoreOptions(item, e)}>
             <MoreHorizontal size={20} color={isDarkMode ? "#555" : "#BBB"} />
           </TouchableOpacity>
@@ -208,7 +236,7 @@ export default function HomeFeed() {
 
       {item.postImage && (
         <TouchableOpacity style={styles.imageCard} onPress={() => router.push({ pathname: '/article-detail', params: { id: item.id } })}>
-          <Image source={{ uri: item.postImage }} style={styles.fullImage} />
+          <Image source={{ uri: item.postImage }} style={styles.fullImage} resizeMode="cover" />
           <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.grad} />
           <View style={styles.cardContent}>
             <View style={styles.cardSourceRow}>
@@ -220,8 +248,7 @@ export default function HomeFeed() {
               <Text style={styles.cardSourceText}>{item.displayName}</Text>
             </View>
             <View style={styles.cardTitleRow}>
-              <Text style={styles.imageOverlayTitle}>{item.title || "Latest Article"}</Text>
-              <Bookmark size={20} color="#FFF" />
+              <Text style={styles.imageOverlayTitle}>{item.title || "Latest Post"}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -239,16 +266,16 @@ export default function HomeFeed() {
 
         <TouchableOpacity
           style={styles.statGroup}
-          onPress={() => router.push({ pathname: '/article-detail', params: { id: item.id } })}
+          onPress={() => router.push({ pathname: '/article-detail', params: { id: item.id, focusComments: 'true' } })}
         >
           <MessageSquare size={20} color={isDarkMode ? "#555" : "#666"} />
           <Text style={[styles.statLabel, { color: isDarkMode ? '#888' : '#666' }]}>{item.commentsCount}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.statGroup}>
-          <Repeat2 size={20} color={isDarkMode ? "#555" : "#666"} />
-          <Text style={[styles.statLabel, { color: isDarkMode ? '#888' : '#666' }]}>12</Text>
-        </TouchableOpacity>
+        <View style={styles.statGroup}>
+          <Eye size={20} color={isDarkMode ? "#555" : "#666"} />
+          <Text style={[styles.statLabel, { color: isDarkMode ? '#888' : '#666' }]}>{item.views_count || 0}</Text>
+        </View>
 
         <TouchableOpacity onPress={() => handleShare(item.title, item.content)}>
           <Share2 size={20} color={isDarkMode ? "#555" : "#666"} />
@@ -274,17 +301,22 @@ export default function HomeFeed() {
 
       <FlatList
         data={posts}
+        ListHeaderComponent={<PulseBar />}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderPost}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => fetchPosts(true)} tintColor={Colors.light.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => fetchPosts(true)} tintColor={isDarkMode ? Colors.dark.secondary : Colors.light.secondary} />
         }
         contentContainerStyle={{ paddingBottom: BOTTOM_NAV_PADDING }}
       />
 
-      {/* Floating Action Button - Updated to Orange */}
+      {/* Floating Action Button - Updated with Dynamic Padding */}
       <TouchableOpacity
-        style={[styles.fab, { backgroundColor: isDarkMode ? Colors.dark.primary : Colors.light.primary }]}
+        style={[styles.fab, {
+          backgroundColor: isDarkMode ? Colors.dark.primary : Colors.light.primary,
+          bottom: 90 + insets.bottom,
+          zIndex: 100
+        }]}
         onPress={() => router.push('/write')}
         activeOpacity={0.8}
       >
@@ -302,7 +334,7 @@ export default function HomeFeed() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: 'transparent' },
   navBar: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, alignItems: 'center', borderBottomWidth: 1 },
   pulseLogo: { fontSize: 24, color: Colors.light.primary, letterSpacing: -0.5, fontFamily: 'ClashGrotesk-Bold' },
   headerAvatar: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F0F0F0', overflow: 'hidden', borderWidth: 1 },
@@ -336,7 +368,7 @@ const styles = StyleSheet.create({
   statLabel: { marginLeft: 6, fontSize: 13, fontFamily: 'ClashGrotesk-Medium' },
   fab: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 80, // Fallback, overridden by insets
     right: 25,
     width: 60,
     height: 60,

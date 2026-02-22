@@ -8,6 +8,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AnimatedSplashScreen } from '../components/AnimatedSplashScreen';
 import { ThemedBackground } from '../components/ThemedBackground';
 import { Colors } from '../constants/theme';
+import { ChatStatusProvider } from '../hooks/useChatStatus';
+import { useNotifications } from '../hooks/useNotifications';
+import { UnreadProvider } from '../hooks/useUnreadCounts';
 import { supabase } from '../supabase';
 import ThemeProvider, { useTheme } from './theme';
 
@@ -19,12 +22,17 @@ function RootLayoutNav({ session, initializing }: { session: any, initializing: 
   const { isDarkMode } = useTheme();
   const [showAnimatedSplash, setShowAnimatedSplash] = useState(true);
 
+  // Initialize push notifications
+  useNotifications();
+
   const [fontsLoaded] = useFonts({
     'ClashGrotesk': require('../assets/fonts/ClashGrotesk-Regular.ttf'),
     'ClashGrotesk-Medium': require('../assets/fonts/ClashGrotesk-Medium.ttf'),
     'ClashGrotesk-SemiBold': require('../assets/fonts/ClashGrotesk-SemiBold.ttf'),
     'ClashGrotesk-Bold': require('../assets/fonts/ClashGrotesk-Bold.ttf'),
   });
+
+  // Removed NavigationBar.setPositionAsync to avoid warnings since edge-to-edge is already active
 
   useEffect(() => {
     if (initializing || !fontsLoaded) return;
@@ -46,7 +54,7 @@ function RootLayoutNav({ session, initializing }: { session: any, initializing: 
   if (initializing || !fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: isDarkMode ? Colors.dark.background : Colors.light.background }}>
-        <ActivityIndicator size="large" color={Colors.light.primary} />
+        <ActivityIndicator size="large" color={isDarkMode ? Colors.dark.secondary : Colors.light.secondary} />
       </View>
     );
   }
@@ -70,7 +78,6 @@ function RootLayoutNav({ session, initializing }: { session: any, initializing: 
           <Stack.Screen name="login" />
           <Stack.Screen name="signup" />
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="create-post" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemedBackground>
     </>
@@ -109,10 +116,14 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <RootLayoutNav session={session} initializing={initializing} />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <UnreadProvider>
+      <ChatStatusProvider>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <RootLayoutNav session={session} initializing={initializing} />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </ChatStatusProvider>
+    </UnreadProvider>
   );
 }

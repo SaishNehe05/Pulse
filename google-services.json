@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "479028392114",
+    "project_id": "pulse-91bed",
+    "storage_bucket": "pulse-91bed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:479028392114:android:a82b1a21717a8da3ef99ab",
+        "android_client_info": {
+          "package_name": "com.saish.pulse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTXJPfZthv3Dh2kC-4odqjpTcwrjEv_64"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

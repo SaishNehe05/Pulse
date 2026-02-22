@@ -1,16 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 // 1. Create the Context
 const ThemeContext = createContext({
   isDarkMode: false,
-  toggleTheme: () => {},
+  toggleTheme: () => { },
 });
 
 // 2. Create the Provider Component
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const systemColorScheme = useColorScheme(); // Detects phone settings
   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
+
+  // Listen for system theme changes
+  useEffect(() => {
+    setIsDarkMode(systemColorScheme === 'dark');
+  }, [systemColorScheme]);
 
   const toggleTheme = () => {
     setIsDarkMode((prev) => !prev);

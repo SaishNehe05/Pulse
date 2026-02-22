@@ -1,11 +1,14 @@
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PulseLogo from '../components/PulseLogo';
 import { Colors } from '../constants/theme';
 import { supabase } from '../supabase';
 import { useTheme } from './theme';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -33,10 +36,12 @@ export default function LoginScreen() {
     }
   }
 
+
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         style={{ flex: 1 }}
       >
         <ScrollView
@@ -60,6 +65,8 @@ export default function LoginScreen() {
             secureTextEntry value={password} onChangeText={setPassword}
           />
 
+
+
           {/* The button will now use the orange background from the theme */}
           <TouchableOpacity
             style={[styles.loginBtn, { backgroundColor: theme.btn }]}
@@ -67,7 +74,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color={theme.btnText} />
+              <ActivityIndicator color={isDarkMode ? Colors.dark.secondary : Colors.light.secondary} />
             ) : (
               <Text style={[styles.btnText, { color: theme.btnText, fontFamily: 'ClashGrotesk-Bold' }]}>
                 Log In
@@ -98,5 +105,36 @@ const styles = StyleSheet.create({
   btnText: { fontSize: 18 },
   footer: { marginTop: 30, alignItems: 'center' },
   footerText: { fontSize: 15 },
-  orangeLinkText: { color: Colors.light.primary }
+  orangeLinkText: { color: Colors.light.primary },
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 18,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
+  },
+  googleBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    fontSize: 14,
+  }
 });

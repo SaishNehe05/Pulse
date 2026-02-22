@@ -10,10 +10,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourname.pulse"
+      "bundleIdentifier": "com.saish.pulse",
+      "googleServiceInfoPlist": "./GoogleService-Info.plist"
     },
     "android": {
-      "package": "com.yourname.pulse",
+      "package": "com.saish.pulse",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -24,7 +26,6 @@
       "adaptiveIcon": {
         "backgroundColor": "#0E0D22",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
@@ -32,7 +33,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
@@ -53,6 +54,25 @@
         {
           "photosPermission": "Allow Pulse to access your photos to share content.",
           "cameraPermission": "Allow Pulse to access your camera to take photos for posts."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#5E9BFF",
+          "sounds": [],
+          "androidMode": "default",
+          "androidCollapsedTitle": "#{unread_notifications} new notifications",
+          "iosDisplayInForeground": true
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Pulse to access your photos.",
+          "savePhotosPermission": "Allow Pulse to save photos to your library.",
+          "isAccessMediaLocationEnabled": true
         }
       ],
       "expo-font"

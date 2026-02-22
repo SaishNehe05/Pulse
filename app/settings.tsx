@@ -80,7 +80,7 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View style={[styles.center, { backgroundColor: 'transparent' }]}>
-        <ActivityIndicator color={Colors.light.primary} size="large" />
+        <ActivityIndicator color={isDarkMode ? Colors.dark.secondary : Colors.light.secondary} size="large" />
       </View>
     );
   }
@@ -102,7 +102,7 @@ export default function SettingsScreen() {
         <Text style={[styles.headerTitle, { color: textColor }]}>Settings</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving}>
           {saving ? (
-            <ActivityIndicator size="small" color={Colors.light.primary} />
+            <ActivityIndicator size="small" color={isDarkMode ? Colors.dark.secondary : Colors.light.secondary} />
           ) : (
             <Text style={styles.saveBtn}>Save</Text>
           )}
